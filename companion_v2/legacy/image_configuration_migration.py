@@ -254,7 +254,7 @@ def _endpoints(raw, *, reference_images, source, differences):
         result.append({
             "id": f"legacy-image-{index + 1:02d}", "name": name, "enabled": enabled,
             "platform": platform, "model": model, "width": width, "height": height,
-            "quality": "standard", "max_reference_images": 1 if reference_images else 0,
+            "quality": "", "max_reference_images": 1 if reference_images else 0,
             "base_url": base_url, "api_key": api_key, "timeout_seconds": timeout,
             "custom_headers": headers, "ratio": ratio, "size_label": size_label,
         })

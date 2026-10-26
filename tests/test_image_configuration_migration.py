@@ -70,6 +70,14 @@ class ImageConfigurationMigrationTests(unittest.TestCase):
         self.assertEqual(endpoint["size_label"], "auto")
         self.assertEqual((endpoint["width"], endpoint["height"]), (1024, 1024))
 
+    def test_migrated_endpoint_does_not_force_quality(self):
+        result = convert_image_configuration({"photo_action_config": {
+            "external_image_api_endpoints": [{"name": "Online", "platform": "openai",
+                "base_url": "https://api.example.test/v1", "model": "image-v1"}],
+        }})
+
+        self.assertEqual(result.output_changes["endpoints"][0]["quality"], "")
+
     def test_sdgen_is_not_misidentified_as_native_sd_webui(self):
         result = convert_image_configuration({"photo_action_config": {
             "photo_generation_backend": "sdgen",
