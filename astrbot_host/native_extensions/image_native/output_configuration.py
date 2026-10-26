@@ -17,7 +17,7 @@ PLATFORMS = {
     "auto", "openai", "openrouter", "agnes", "sensenova", "minimax",
     "bailian", "modelscope", "doubao", "gemini",
 }
-IMAGE_QUALITIES = {"auto", "low", "medium", "high", "standard", "hd"}
+IMAGE_QUALITIES = {"", "auto", "low", "medium", "high", "standard", "hd"}
 IMAGE_OPERATIONS = ("generate", "edit")
 LOCAL_ROUTES = {"comfyui", "sd_webui"}
 
@@ -105,7 +105,7 @@ def settings(plugin):
         result.setdefault("network", {})
         for endpoint in result.get("endpoints", []):
             if isinstance(endpoint, dict):
-                endpoint.setdefault("quality", "standard")
+                endpoint.setdefault("quality", "")
                 endpoint.setdefault("max_reference_images", 1)
                 endpoint.setdefault("size_label", f"{endpoint.get('width', 1024)}x{endpoint.get('height', 1024)}")
         result["operation_routes"] = _stored_operation_routes(result)
@@ -258,7 +258,7 @@ def save_configuration(plugin, revision, changes):
         if not isinstance(identifier, str) or not identifier or len(identifier) > 128 or identifier in ids:
             raise NativeImageError("invalid_configuration")
         ids.add(identifier)
-        quality = item.get("quality", "standard")
+        quality = item.get("quality", "")
         max_reference_images = item.get("max_reference_images", 1)
         if (type(item.get("enabled")) is not bool or item.get("platform") not in PLATFORMS
                 or any(type(item.get(key)) is not str or len(item[key]) > 240 for key in ("name", "model"))

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import math
 from dataclasses import replace
 from pathlib import Path
@@ -17,6 +18,8 @@ from .owner import checked
 from .types import BackendResult, NativeImageError, fingerprint
 
 OPENAI_COMPATIBLE_PLATFORMS = frozenset({"openai", "openrouter", "agnes", "sensenova", "doubao"})
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_platform(config):
@@ -101,7 +104,7 @@ class OnlineImageBackend:
         if platform == "agnes" and config.get("size_label") in {"1K", "2K", "3K", "4K"}:
             size = config["size_label"]
         body = {"model": config["model"], "prompt": invocation.prompt,
-                "n": 1, "size": size, "response_format": "b64_json"}
+                "n": 1, "size": size}
         if platform == "minimax":
             divisor = math.gcd(config["width"], config["height"])
             ratio = config.get("ratio") or f"{config['width'] // divisor}:{config['height'] // divisor}"
@@ -136,6 +139,10 @@ class OnlineImageBackend:
             await checked(before_dispatch)
             async with session.post(url, headers=headers, allow_redirects=False, **kwargs) as response:
                 if response.status in {400, 401, 403, 404, 405, 413, 422}:
+                    detail = await response.text()
+                    logger.warning("[CompanionV2] 生图端点拒绝请求 status=%s endpoint=%s model=%s body=%s",
+                                   response.status, config.get("id", ""), config.get("model", ""),
+                                   detail[:800])
                     raise Rejected("backend_rejected")
                 if response.status >= 300:
                     raise NativeImageError("backend_result_unconfirmed")
